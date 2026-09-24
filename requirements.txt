@@ -1,0 +1,11 @@
+numpy
+pandas
+scipy
+statsmodels
+duckdb
+openpyxl
+xlrd
+plotly
+streamlit
+pytest
+ruff

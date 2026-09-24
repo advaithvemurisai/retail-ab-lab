@@ -1,0 +1,12 @@
+[project]
+name = "retail-ab-lab"
+version = "0.1.0"
+description = "Retail marketing, sales, finance, and experimentation decision lab"
+requires-python = ">=3.11"
+keywords = ["retail", "marketing", "sales", "finance", "ab-testing", "cuped", "duckdb"]
+dependencies = ["numpy", "pandas", "scipy", "statsmodels", "duckdb", "openpyxl", "plotly", "streamlit"]
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+[tool.ruff]
+line-length = 100
