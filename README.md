@@ -1,5 +1,9 @@
 # RetailLab
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://retail-ab-lab-bnwnskexpoqbajnhzqgnkh.streamlit.app/)
+
+**[Live app →](https://retail-ab-lab-bnwnskexpoqbajnhzqgnkh.streamlit.app/)**
+
 **Should a retailer keep sending its marketing e-mail?** RetailLab answers that question with a real randomized experiment and a profit-and-loss statement, not a p-value alone.
 
 It takes the [Hillstrom e-mail experiment](https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html) (64,000 customers, randomly split into men's e-mail, women's e-mail, and no e-mail), measures how much extra revenue the e-mail caused, prices that lift at a real sector gross margin and a per-send cost, and returns one verdict:
@@ -69,7 +73,7 @@ The Streamlit app has eleven pages. The decision pages all read one cached reado
 
 ## Quick start
 
-Requires Python 3.11+.
+The fastest way to see it is the [live app](https://retail-ab-lab-bnwnskexpoqbajnhzqgnkh.streamlit.app/). It downloads the public data on first start, so it runs on the real experiment. To run it locally (Python 3.11+):
 
 ```bash
 git clone https://github.com/advaithvemurisai/retail-ab-lab.git

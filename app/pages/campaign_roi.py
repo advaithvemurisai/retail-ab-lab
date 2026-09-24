@@ -18,8 +18,9 @@ header(
 cols = st.columns(3)
 cols[0].metric(
     "Contribution", money(e["contribution"]),
-    f"95% CI {money(r.contribution['ci_low'])} to {money(r.contribution['ci_high'])}",
-    delta_color="off",
+    f"95% CI {money(r.contribution['ci_low'], markdown=True)} to "
+    f"{money(r.contribution['ci_high'], markdown=True)}",
+    delta_color="off", delta_arrow="off",
 )
 cols[1].metric(
     "ROI", f"{e['roi']:+.0%}",

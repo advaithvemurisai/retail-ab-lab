@@ -28,8 +28,9 @@ cols[0].metric(
 )
 cols[1].metric(
     "Contribution", money(r.economics["contribution"]),
-    f"95% CI {money(r.contribution['ci_low'])} to {money(r.contribution['ci_high'])}",
-    delta_color="off", help="Incremental gross profit minus e-mail cost.",
+    f"95% CI {money(r.contribution['ci_low'], markdown=True)} to "
+    f"{money(r.contribution['ci_high'], markdown=True)}",
+    delta_color="off", delta_arrow="off", help="Incremental gross profit minus e-mail cost.",
 )
 cols[2].metric(
     "ROI", f"{r.economics['roi']:+.0%}",
