@@ -7,7 +7,7 @@ from statsmodels.stats.power import NormalIndPower
 
 from retaillab.analysis import Assumptions, analyze
 from retaillab.data import COLUMNS, DESIGN, campaign_view, demo_email, load_hillstrom
-from retaillab.decision import decide
+from retaillab.decision import decide, format_roi
 from retaillab.estimate import (
     benjamini_hochberg,
     bootstrap_difference,
@@ -198,6 +198,15 @@ def test_decision_branches():
     waiting = decide(**base, primary_lift=0, primary_p=0.9, power=0.4, additional_weeks=3)
     assert waiting.label == "KEEP TESTING" and waiting.additional_weeks == 3
 
+
+
+def test_free_campaign_has_no_roi():
+    assert format_roi(0.88) == "+88%"
+    free = decide(
+        validity_failed=False, primary_lift=0.2, primary_p=0.01, contribution_low=1,
+        contribution_high=2, roi=np.inf,
+    )
+    assert free.label == "SHIP" and "inf" not in " ".join(free.reasons)
 
 def test_analyze_demo_end_to_end():
     readout = analyze(DEMO, Assumptions(gross_margin=0.5))

@@ -5,6 +5,7 @@ from app.ui.components import chart, header, money
 from app.ui.context import get_readout
 from app.ui.theme import COLORS
 from retaillab.data import VARIANTS
+from retaillab.decision import format_roi
 
 r = get_readout()
 a, e = r.assumptions, r.economics
@@ -23,7 +24,7 @@ cols[0].metric(
     delta_color="off", delta_arrow="off",
 )
 cols[1].metric(
-    "ROI", f"{e['roi']:+.0%}",
+    "ROI", format_roi(e["roi"]),
     help="Contribution divided by e-mail cost.",
 )
 cols[2].metric(
@@ -48,7 +49,7 @@ fig = go.Figure(
         connector={"line": {"color": COLORS["line"]}},
     )
 )
-fig.update_yaxes(tickprefix="$", tickformat=",.0f")
+fig.update_yaxes(tickformat="$,.0f")
 chart(fig, 380)
 st.caption(
     f"Gross margin {a.gross_margin:.1%}, e-mail cost \\${a.contact_cost:.2f} per customer. "

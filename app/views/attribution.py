@@ -37,7 +37,7 @@ fig = go.Figure(
     ]
 )
 fig.update_layout(barmode="stack")
-fig.update_xaxes(tickprefix="$", tickformat=",.0f")
+fig.update_xaxes(tickformat="$,.0f")
 chart(fig, 200)
 st.markdown(
     f"Grey is revenue the control group predicts e-mailed customers would have spent "

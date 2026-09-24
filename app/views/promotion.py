@@ -66,7 +66,7 @@ fig = go.Figure(
         hovertemplate="%{x}: %{y:$.2f} per customer<extra></extra>",
     )
 )
-fig.update_yaxes(title="Revenue per customer, two weeks (95% CI)", tickprefix="$")
+fig.update_yaxes(title="Revenue per customer, two weeks (95% CI)", tickformat="$,.2~f")
 chart(fig, 360)
 
 st.dataframe(
@@ -82,8 +82,8 @@ st.dataframe(
     hide_index=True,
     column_config={
         "Conversion": st.column_config.NumberColumn(format="percent"),
-        "Revenue / customer": st.column_config.NumberColumn(format="$%.2f"),
-        "Contribution / 10k sends": st.column_config.NumberColumn(format="$%.0f"),
+        "Revenue / customer": st.column_config.NumberColumn(format="dollar"),
+        "Contribution / 10k sends": st.column_config.NumberColumn(format="dollar"),
     },
 )
 st.subheader("Pairwise comparisons")
@@ -97,9 +97,9 @@ st.dataframe(
     hide_index=True,
     column_config={
         "comparison": "Comparison",
-        "difference": st.column_config.NumberColumn("Revenue difference", format="$%.3f"),
-        "ci_low": st.column_config.NumberColumn("95% CI low", format="$%.3f"),
-        "ci_high": st.column_config.NumberColumn("95% CI high", format="$%.3f"),
+        "difference": st.column_config.NumberColumn("Revenue difference", format="dollar"),
+        "ci_low": st.column_config.NumberColumn("95% CI low", format="dollar"),
+        "ci_high": st.column_config.NumberColumn("95% CI high", format="dollar"),
         "p_value": st.column_config.NumberColumn("p", format="%.4f"),
         "p_adjusted": st.column_config.NumberColumn("BH-adjusted p", format="%.4f"),
         "significant": "Significant",

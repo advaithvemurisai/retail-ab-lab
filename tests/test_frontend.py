@@ -22,7 +22,7 @@ def demo_mode(monkeypatch):
 def run(page: str | None = None) -> AppTest:
     app = AppTest.from_file(str(APP), default_timeout=120).run()
     if page:
-        app.switch_page(f"pages/{page}.py").run()
+        app.switch_page(f"views/{page}.py").run()
     assert not app.exception, [item.value for item in app.exception]
     return app
 
@@ -61,3 +61,9 @@ def test_sidebar_variant_and_custom_margin():
     assert not app.exception
     assert "Women&#x27;s e-mail" in verdict(app)
     assert "<h2>SHIP</h2>" not in verdict(app)
+
+
+def test_no_legacy_pages_folder():
+    """A pages/ folder beside the entry script makes Streamlit run a deep-linked page
+    before streamlit_app.py sets sys.path, so a cold start on /targeting fails to import."""
+    assert not (APP.parent / "pages").exists()

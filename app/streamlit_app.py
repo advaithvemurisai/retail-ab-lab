@@ -18,19 +18,19 @@ inject_theme()
 render_sidebar()
 pages = {
     "Decision": [
-        st.Page("pages/overview.py", title="Overview", default=True),
-        st.Page("pages/campaign_roi.py", title="Campaign ROI"),
-        st.Page("pages/attribution.py", title="Attributed vs incremental"),
-        st.Page("pages/targeting.py", title="Who to send to"),
-        st.Page("pages/promotion.py", title="Which e-mail"),
-        st.Page("pages/economics.py", title="Same lift, different economics"),
+        st.Page("views/overview.py", title="Overview", default=True),
+        st.Page("views/campaign_roi.py", title="Campaign ROI"),
+        st.Page("views/attribution.py", title="Attributed vs incremental"),
+        st.Page("views/targeting.py", title="Who to send to"),
+        st.Page("views/promotion.py", title="Which e-mail"),
+        st.Page("views/economics.py", title="Same lift, different economics"),
     ],
     "Evidence": [
-        st.Page("pages/planning.py", title="Test planning"),
-        st.Page("pages/pitfalls.py", title="Pitfalls lab"),
-        st.Page("pages/data_model.py", title="Data model"),
-        st.Page("pages/research.py", title="Research"),
+        st.Page("views/planning.py", title="Test planning"),
+        st.Page("views/pitfalls.py", title="Pitfalls lab"),
+        st.Page("views/data_model.py", title="Data model"),
+        st.Page("views/research.py", title="Research"),
     ],
-    "Portfolio": [st.Page("pages/case_study.py", title="Case study")],
+    "Portfolio": [st.Page("views/case_study.py", title="Case study")],
 }
 st.navigation(pages).run()

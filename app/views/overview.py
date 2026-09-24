@@ -6,6 +6,7 @@ from app.ui.components import chart, money, verdict_card
 from app.ui.context import get_readout, load_data
 from app.ui.theme import COLORS
 from retaillab.data import ARM_LABELS, VARIANTS
+from retaillab.decision import format_roi
 
 r = get_readout()
 a = r.assumptions
@@ -33,7 +34,7 @@ cols[1].metric(
     delta_color="off", delta_arrow="off", help="Incremental gross profit minus e-mail cost.",
 )
 cols[2].metric(
-    "ROI", f"{r.economics['roi']:+.0%}",
+    "ROI", format_roi(r.economics["roi"]),
     help="Contribution divided by e-mail cost. +100% means each $1 spent returned $2 of "
     "gross profit.",
 )

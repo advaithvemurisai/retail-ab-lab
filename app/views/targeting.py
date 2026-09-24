@@ -72,7 +72,7 @@ fig = go.Figure(
     )
 )
 fig.add_vline(x=0, line_color=COLORS["danger"], line_dash="dash")
-fig.update_xaxes(title="Incremental contribution per e-mail (95% CI)", tickprefix="$")
+fig.update_xaxes(title="Incremental contribution per e-mail (95% CI)", tickformat="$,.2~f")
 chart(fig, 60 + 45 * len(ordered))
 
 st.dataframe(
@@ -84,8 +84,8 @@ st.dataframe(
     column_config={
         "segment": SEGMENT_COLUMNS[by],
         "audience": st.column_config.NumberColumn("Customers", format="%d"),
-        "difference": st.column_config.NumberColumn("Revenue lift / customer", format="$%.2f"),
-        "profit_per_send": st.column_config.NumberColumn("Contribution / send", format="$%.2f"),
+        "difference": st.column_config.NumberColumn("Revenue lift / customer", format="dollar"),
+        "profit_per_send": st.column_config.NumberColumn("Contribution / send", format="dollar"),
         "p_value": st.column_config.NumberColumn("p", format="%.3f"),
         "p_adjusted": st.column_config.NumberColumn("BH-adjusted p", format="%.3f"),
         "significant": "Significant",

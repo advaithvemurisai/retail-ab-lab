@@ -3,6 +3,7 @@ import streamlit as st
 from app.ui.components import header, money
 from app.ui.context import get_readout, load_data, load_margin_table
 from retaillab.data import campaign_view
+from retaillab.decision import format_roi
 from retaillab.finance import attributed_incremental
 
 data, source = load_data()
@@ -40,8 +41,8 @@ A retailer's marketing team reports that an e-mail campaign drove
   (95% CI {money(pooled.contribution['ci_low'], markdown=True)} to
   {money(pooled.contribution['ci_high'], markdown=True)}).
 - **The {names[leader.assumptions.variant]} e-mail carries it.** {leader.revenue_lift:+.0%} lift
-  and {leader.economics['roi']:+.0%} ROI, against {trailer.revenue_lift:+.0%} and
-  {trailer.economics['roi']:+.0%} for the {names[trailer.assumptions.variant]} e-mail, whose
+  and {format_roi(leader.economics['roi'])} ROI, against {trailer.revenue_lift:+.0%} and
+  {format_roi(trailer.economics['roi'])} for the {names[trailer.assumptions.variant]} e-mail, whose
   chance of loss is {trailer.contribution['chance_of_loss']:.0%}.
 - **Attribution overstates.** {attribution['gap_pct']:.0%} of revenue from e-mailed customers
   would have happened without the e-mail.

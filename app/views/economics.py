@@ -65,7 +65,7 @@ st.dataframe(
     column_config={
         "Gross margin": st.column_config.NumberColumn(format="percent"),
         "Break-even lift": st.column_config.NumberColumn(format="percent"),
-        "Contribution / 10k sends": st.column_config.NumberColumn(format="$%.0f"),
+        "Contribution / 10k sends": st.column_config.NumberColumn(format="dollar"),
     },
 )
 st.caption(

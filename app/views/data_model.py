@@ -44,7 +44,7 @@ with right:
         ).df(),
         hide_index=True,
         column_config={
-            column: st.column_config.NumberColumn(format="$%.0f")
+            column: st.column_config.NumberColumn(format="dollar")
             for column in ["incremental_revenue", "gross_profit", "marketing_cost", "contribution"]
         },
     )

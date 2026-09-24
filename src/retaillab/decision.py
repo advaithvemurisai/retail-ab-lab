@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
+
+
+def format_roi(roi: float) -> str:
+    """ROI is undefined when the campaign costs nothing to send."""
+    return f"{roi:+.0%}" if math.isfinite(roi) else "n/a (no e-mail cost)"
 
 
 @dataclass(frozen=True)
@@ -62,7 +68,9 @@ def decide(
         if roi >= minimum_roi:
             reasons = (
                 f"Revenue per customer is significantly higher ({primary_lift:+.1%}).",
-                f"ROI of {roi:+.0%} clears the {minimum_roi:+.0%} hurdle.",
+                f"ROI of {roi:+.0%} clears the {minimum_roi:+.0%} hurdle."
+                if math.isfinite(roi)
+                else "The e-mail costs nothing to send, so any profitable lift clears the hurdle.",
             )
             if chance_of_loss > 0.1:
                 return Verdict(
