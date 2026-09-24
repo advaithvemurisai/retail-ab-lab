@@ -1,25 +1,28 @@
 # RetailLab
 
-RetailLab is an interactive retail decision lab that joins marketing experiments, sales outcomes, and finance benchmarks. It answers six questions for a CFO or CMO in 30 seconds, while keeping the statistical evidence inspectable.
+RetailLab turns a randomized e-mail experiment into a finance decision. It prices the measured revenue lift at a sector gross margin and a per-send cost, checks that the experiment can be trusted, and returns one verdict: **SHIP**, **DON'T SHIP**, **KEEP TESTING**, or **DON'T TRUST**. Every assumption sits in the sidebar, and every number traces back to one DuckDB star schema.
 
 ## Questions
 
-| Question | Data joined | Default answer |
+| Page | Question | How it is answered |
 | --- | --- | --- |
-| Did the campaign pay for itself? | randomized email, revenue, margin | incremental contribution after contact cost |
-| How much was incremental? | treatment and control revenue | attributed revenue overstates causal revenue |
-| Who should receive the next send? | segment outcomes and economics | rank profit per dollar, then correct inference |
-| Which promotion should roll out? | store clusters, weekly sales, restaurant margin | cluster-aware rollout economics |
-| Can the same lift pay elsewhere? | contact cost and sector margins | break-even depends on unit economics |
-| How long should the next test run? | power, CUPED, peeking | plan in weeks and dollars |
+| Overview | Should we ship? | SRM check, Welch test on revenue per customer, bootstrap contribution interval, power at break-even |
+| Campaign ROI | Did the campaign pay for itself? | Incremental revenue → gross profit → e-mail cost → contribution |
+| Attributed vs incremental | How much revenue was caused? | E-mail-attributed revenue split into the control-predicted baseline and causal lift |
+| Who to send to | Which customers next? | Segment-level lift, BH-corrected, ranked by contribution per send, filled to a send budget |
+| Which e-mail | Men's or women's creative? | Three-arm pairwise Welch tests with BH correction |
+| Same lift, different economics | Would it pay in another sector? | Break-even lift per Damodaran sector against the observed lift's 95% interval |
+| Test planning | How long should the next test run? | Sample size and weeks for the break-even lift, with and without CUPED |
+| Pitfalls lab | What can fool the team? | Peeking simulation, a simulated logging bug caught by SRM, placebo segment slicing |
 
-## Key findings
+## Key findings (Hillstrom, Apparel margin, $0.18 per e-mail)
 
-- Revenue up is not profit up.
-- Attributed revenue is not incremental revenue.
-- Public sector margins are benchmarks, not a retailer's books.
-- CUPED can shorten a test when pre-period spend predicts the outcome.
-- Peeking and broken splits can create false confidence.
+- **Ship the e-mail program.** Revenue per customer rose 91% against a 48% break-even lift. Contribution was about $6.8k (95% CI $1.5k to $11.7k), with a 1% chance of loss.
+- **The men's e-mail carries it.** ROI was +143% for the men's e-mail and +34% for the women's, which still has a 21% chance of losing money. The men's e-mail wins head to head after BH correction (p = 0.03).
+- **Attributed revenue is not incremental revenue.** 52% of revenue from e-mailed customers would have happened anyway.
+- **Margin decides the answer.** The same lift clearly pays at apparel margins and is uncertain at grocery or restaurant margins.
+- **CUPED is not free.** Past-year spend correlates with two-week spend at ρ = 0.02, so it removes only 0.05% of variance here.
+- **Peeking is expensive.** Ten interim looks at an A/A test produce a false winner about 20% of the time.
 
 ## Run locally
 
@@ -27,19 +30,28 @@ RetailLab is an interactive retail decision lab that joins marketing experiments
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python scripts/get_data.py
-python scripts/build_warehouse.py
+python scripts/get_data.py        # Hillstrom CSV and Damodaran margin.xls into data/raw/
+python scripts/build_warehouse.py # optional: writes data/retaillab.duckdb
 streamlit run app/streamlit_app.py
 ruff check .
 pytest
 ```
 
-The app runs in deterministic demo mode until licensed raw files are placed in `data/raw/`. See [DATA_SOURCES.md](DATA_SOURCES.md) before downloading or redistributing data. The DuckDB model includes dimensions for customers, stores, markets, campaigns, and sector finance plus exposure, sales, pre-period, experiment, and P&L marts in the production path.
+Without `data/raw/`, the app runs on synthetic data shaped like Hillstrom, with clearly labelled placeholder margins, and says so in the sidebar. Set `RETAILLAB_DEMO=1` to force demo mode. The UI tests do this, so CI is deterministic. See [DATA_SOURCES.md](DATA_SOURCES.md) before redistributing data.
+
+## Layout
+
+```
+src/retaillab/   data, validity, estimate, variance (CUPED), power, finance, decision, analysis, warehouse
+sql/warehouse.sql  dim_customer, dim_campaign, dim_sector_finance, fact_exposure, fact_sales, mart_experiment, mart_pnl
+app/             Streamlit multipage app; every decision page reads one cached analyze() readout
+tests/           estimator, decision, and warehouse tests plus a render test for every page
+```
 
 ## Limitations
 
-Contact costs are assumptions. Damodaran margins are public-company averages. Hillstrom has no timestamps, so peeking is a resampling demonstration. Fast Food has few independent stores. The datasets come from different companies and years and are joined through a common model, not one company's books. The demo fixture is not a published business result.
+The cost per e-mail is an assumption. Damodaran margins are averages for US public companies, not one retailer's books. Hillstrom has no timestamps, so the peeking demonstration is a simulation. Revenue covers a two-week window and ignores longer-run effects such as unsubscribes. Segment rankings use point estimates unless the BH filter is on.
 
 ## Suggested GitHub topics
 
-`retail` `marketing-analytics` `sales-analytics` `finance` `ab-testing` `experimentation` `cuped` `duckdb` `streamlit` `incrementality`
+`retail` `marketing-analytics` `finance` `ab-testing` `experimentation` `cuped` `duckdb` `streamlit` `incrementality`

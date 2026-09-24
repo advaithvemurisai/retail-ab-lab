@@ -1,30 +1,21 @@
+"""Write the RetailLab star schema to data/retaillab.duckdb."""
+
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
-from retaillab.demo import demo_email
-from retaillab.warehouse import build_warehouse
+ROOT = Path(__file__).parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+from retaillab.data import load_experiment
+from retaillab.finance import load_margins
+from retaillab.warehouse import build_warehouse, table_counts
 
-root = Path(__file__).parents[1]
-hillstrom = root / "data" / "raw" / "hillstrom.csv"
-if hillstrom.exists():
-    import pandas as pd
+CONTACT_COST = 0.18
 
-    raw = pd.read_csv(hillstrom)
-    frame = raw.rename(
-        columns={"segment": "arm", "conversion": "conversion", "spend": "revenue"}
-    )
-    frame["arm"] = frame["arm"].replace(
-        {"No E-Mail": "control", "Mens E-Mail": "treatment", "Womens E-Mail": "treatment"}
-    )
-    frame["unit_id"] = range(len(frame))
-    frame["pre_spend"] = frame["history"]
-    frame["segment"] = frame["history_segment"]
-    frame = frame[["unit_id", "arm", "conversion", "revenue", "pre_spend", "segment"]]
-    source = "Hillstrom"
-else:
-    frame = demo_email()
-    source = "deterministic demo"
-
-build_warehouse(root / "data" / "retaillab.duckdb", {"mart_experiment": frame})
-print(f"Built {source} warehouse at data/retaillab.duckdb")
+if __name__ == "__main__":
+    data, source = load_experiment()
+    margins = load_margins()
+    target = ROOT / "data" / "retaillab.duckdb"
+    connection = build_warehouse(target, data, margins, CONTACT_COST)
+    print(table_counts(connection).to_string(index=False))
+    connection.close()
+    print(f"Built {source} warehouse ({margins['source']} margins) at {target.relative_to(ROOT)}")

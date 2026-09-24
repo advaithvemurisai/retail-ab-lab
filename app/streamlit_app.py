@@ -12,7 +12,7 @@ from app.ui.context import render_sidebar
 from app.ui.theme import inject_theme
 
 st.set_page_config(
-    page_title="RetailLab", page_icon="R", layout="wide", initial_sidebar_state="expanded"
+    page_title="RetailLab", page_icon=":material/storefront:", layout="wide", initial_sidebar_state="expanded"
 )
 inject_theme()
 render_sidebar()
@@ -22,7 +22,7 @@ pages = {
         st.Page("pages/campaign_roi.py", title="Campaign ROI"),
         st.Page("pages/attribution.py", title="Attributed vs incremental"),
         st.Page("pages/targeting.py", title="Who to send to"),
-        st.Page("pages/promotion.py", title="Promotion rollout"),
+        st.Page("pages/promotion.py", title="Which e-mail"),
         st.Page("pages/economics.py", title="Same lift, different economics"),
     ],
     "Evidence": [

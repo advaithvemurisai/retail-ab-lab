@@ -1,10 +1,17 @@
 [project]
 name = "retail-ab-lab"
 version = "0.1.0"
-description = "Retail marketing, sales, finance, and experimentation decision lab"
+description = "Prices a randomized retail e-mail experiment into a ship / don't-ship decision"
 requires-python = ">=3.11"
 keywords = ["retail", "marketing", "sales", "finance", "ab-testing", "cuped", "duckdb"]
-dependencies = ["numpy", "pandas", "scipy", "statsmodels", "duckdb", "openpyxl", "plotly", "streamlit"]
+dependencies = [
+    "numpy", "pandas", "scipy", "statsmodels", "duckdb", "openpyxl", "xlrd", "plotly",
+    "streamlit>=1.50",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]
 testpaths = ["tests"]

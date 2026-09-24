@@ -6,6 +6,6 @@ duckdb
 openpyxl
 xlrd
 plotly
-streamlit
+streamlit>=1.50
 pytest
 ruff
