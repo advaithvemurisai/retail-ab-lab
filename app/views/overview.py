@@ -5,8 +5,9 @@ import streamlit as st
 from app.ui.components import chart, money, verdict_card
 from app.ui.context import get_readout, load_data
 from app.ui.theme import COLORS
-from retaillab.data import ARM_LABELS, VARIANTS
+from retaillab.data import ARM_LABELS, VARIANTS, campaign_view
 from retaillab.decision import format_roi
+from retaillab.finance import attributed_incremental
 
 r = get_readout()
 a = r.assumptions
@@ -71,6 +72,42 @@ st.caption(
     f"{r.conversion['relative_lift']:+.0%} "
     f"(95% CI {r.conversion['lift_ci_low']:+.0%} to {r.conversion['lift_ci_high']:+.0%})."
 )
+
+st.subheader("The questions a retailer needs answered")
+pooled, mens, womens = (get_readout(variant) for variant in ("any", "mens", "womens"))
+leader, trailer = ("men's", mens), ("women's", womens)
+if womens.economics["roi"] > mens.economics["roi"]:
+    leader, trailer = trailer, leader
+attribution = attributed_incremental(campaign_view(data, "any"))
+questions = [
+    ("Did the campaign pay for itself?",
+     (f"{pooled.verdict.label.capitalize()}: {money(pooled.economics['contribution'], markdown=True)} "
+      f"contribution after e-mail costs, with a {pooled.contribution['chance_of_loss']:.0%} chance it "
+      "lost money."),
+     "views/campaign_roi.py"),
+    ("How much revenue did the e-mail actually cause?",
+     f"{attribution['gap_pct']:.0%} of revenue credited to the e-mail would have come in anyway.",
+     "views/attribution.py"),
+    ("Who should get the next send?",
+     "Segments ranked by the profit the e-mail caused in each, filled to a send budget.",
+     "views/targeting.py"),
+    ("Which e-mail should roll out?",
+     (f"The {leader[0]} e-mail: {format_roi(leader[1].economics['roi'])} ROI against "
+      f"{format_roi(trailer[1].economics['roi'])} for the {trailer[0]} e-mail."),
+     "views/promotion.py"),
+    ("Would it pay in a different business?",
+     "The same lift priced at apparel, grocery and restaurant margins. Margin decides the answer.",
+     "views/economics.py"),
+    ("How long should the next test run?",
+     "Customers and weeks needed to detect the smallest lift that pays for itself.",
+     "views/planning.py"),
+]
+for row in (questions[:3], questions[3:]):
+    for col, (question, answer, page) in zip(st.columns(3), row):
+        with col.container(border=True):
+            st.markdown(f"**{question}**")
+            st.markdown(f":gray[{answer}]")
+            st.page_link(page, label="Open", icon=":material/arrow_forward:")
 
 st.subheader("How it works")
 steps = st.columns(3)

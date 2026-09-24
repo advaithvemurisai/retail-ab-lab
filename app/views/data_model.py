@@ -18,7 +18,8 @@ connection = warehouse(source, a.contact_cost)
 header(
     "Evidence",
     "One model across marketing, sales, and finance",
-    "Every number in the app can be rebuilt from this star schema. It is built in memory here "
+    "Marketing, sales and finance usually report from different systems and disagree on what a "
+    "campaign earned. Here every number is rebuilt from one star schema. It is built in memory here "
     "from sql/warehouse.sql; scripts/build_warehouse.py writes the same tables to "
     "data/retaillab.duckdb.",
 )

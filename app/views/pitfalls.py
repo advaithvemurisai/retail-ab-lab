@@ -62,7 +62,8 @@ data, _ = load_data()
 header(
     "Evidence",
     "What can fool the team?",
-    "Three ways a readout goes wrong even when the arithmetic is right.",
+    "Three ways a team ends up shipping a campaign that doesn't work, even when the arithmetic "
+    "is right. Each one is caught by a check that runs before the verdict.",
 )
 
 st.subheader("1. Peeking at a test that has no effect")

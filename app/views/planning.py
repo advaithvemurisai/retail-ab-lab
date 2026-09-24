@@ -14,8 +14,9 @@ a = r.assumptions
 header(
     "Evidence",
     "How long should the next test run?",
-    "Size the next test so it can detect the smallest lift that pays for itself. Noise comes "
-    "from this experiment's own revenue spread.",
+    "A test that is too short can't tell a profitable e-mail from noise; one that runs too long "
+    "keeps a holdout group from being mailed and costs sales. Size the next test to detect the "
+    "smallest lift that pays for itself, using this experiment's own revenue spread.",
 )
 
 left, middle, right = st.columns(3)
