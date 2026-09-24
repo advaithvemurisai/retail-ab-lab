@@ -44,8 +44,13 @@ Margin, cost per e-mail and the return hurdle are all adjustable in the sidebar,
 
 - **Python and DuckDB:** one data model feeds every page, so marketing, sales and finance numbers always agree.
 - **Streamlit:** the interactive app.
-- **Decision rules:** trust checks run first, then profitability, then statistical evidence. The logic lives in [`src/retaillab/decision.py`](src/retaillab/decision.py) and is unit-tested.
-- The methods follow published industry research on online experiments ([REFERENCES.md](REFERENCES.md)).
+- **Decision rules:** the verdict comes from the same checks in a fixed order, and the first one that applies decides:
+  1. **Trust:** did the experiment run correctly? If the customer groups aren't the sizes the design called for, something broke, and the verdict is DON'T TRUST.
+  2. **Profitability:** does the campaign lose money or hurt a customer group? If so, DON'T SHIP.
+  3. **Evidence:** is the gain real and large enough? If it clears the return hurdle, SHIP; if the result is still unclear, KEEP TESTING.
+
+  The order means a striking profit number from a broken experiment can never lead to SHIP. The rules live in one function in [`src/retaillab/decision.py`](src/retaillab/decision.py), and automated tests check that each scenario produces the right verdict.
+- **Proven methods:** the statistics follow published work from teams that run large-scale online experiments, such as Microsoft and LinkedIn. Examples include catching broken experiments, reducing noise so tests finish sooner, and avoiding false winners when results are checked repeatedly or many groups are compared at once. See [REFERENCES.md](REFERENCES.md).
 
 ## Run it
 
