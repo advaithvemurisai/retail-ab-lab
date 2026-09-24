@@ -11,7 +11,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
 from retaillab.analysis import Assumptions, Readout, analyze
-from retaillab.data import VARIANTS, load_experiment
+from retaillab.data import VARIANTS, fetch_public_files, load_experiment
 from retaillab.finance import load_margins
 
 CUSTOM_MARGIN = "Custom margin"
@@ -24,6 +24,17 @@ DEFAULTS = {
     "weekly_customers": 10_000,
     "use_cuped": True,
 }
+
+
+@st.cache_resource(show_spinner="Downloading the Hillstrom experiment and Damodaran margins...")
+def ensure_public_files() -> None:
+    """Fetch the public data once per server, so a fresh deploy runs on real data."""
+    if os.environ.get("RETAILLAB_DEMO") == "1":
+        return
+    try:
+        fetch_public_files()
+    except OSError:
+        pass  # Offline: the loaders fall back to labelled demo data.
 
 
 @st.cache_data(show_spinner=False)
@@ -68,6 +79,7 @@ def get_readout(variant: str | None = None) -> Readout:
 def render_sidebar() -> None:
     for key, value in DEFAULTS.items():
         st.session_state.setdefault(key, value)
+    ensure_public_files()
     data, source = load_data()
     margins = load_margin_table()
     with st.sidebar:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from urllib.request import urlretrieve
 
 import numpy as np
 import pandas as pd
@@ -25,7 +26,27 @@ COLUMNS = [
     "unit_id", "arm", "visit", "conversion", "revenue", "pre_spend", "recency",
     "history_segment", "channel", "zip_code", "newbie",
 ]
+PUBLIC_FILES = {
+    "hillstrom.csv": "http://www.minethatdata.com/Kevin_Hillstrom_MineThatData_E-MailAnalytics_DataMiningChallenge_2008.03.20.csv",
+    "margin.xls": "https://www.stern.nyu.edu/~adamodar/pc/datasets/margin.xls",
+}
 _HILLSTROM_ARMS = {"No E-Mail": "control", "Mens E-Mail": "mens", "Womens E-Mail": "womens"}
+
+
+def fetch_public_files(raw_dir: str | Path = RAW_DIR) -> list[str]:
+    """Download missing public source files. Returns the names that were downloaded."""
+    raw = Path(raw_dir)
+    raw.mkdir(parents=True, exist_ok=True)
+    downloaded = []
+    for filename, url in PUBLIC_FILES.items():
+        destination = raw / filename
+        if destination.exists():
+            continue
+        partial = destination.with_suffix(destination.suffix + ".part")
+        urlretrieve(url, partial)
+        partial.rename(destination)
+        downloaded.append(filename)
+    return downloaded
 
 
 def load_hillstrom(path: str | Path) -> pd.DataFrame:
