@@ -24,14 +24,19 @@ def power_two_means(
 
 def required_total_n(
     delta: float, sd: float, treatment_share: float = 0.5, alpha: float = 0.05,
-    power: float = 0.8,
+    power: float = 0.8, sd_treatment: float | None = None,
 ) -> int:
-    """Total customers needed across both arms for the given allocation."""
+    """Total customers needed across both arms for the given allocation.
+
+    `sd` is the control SD; pass `sd_treatment` when the arms differ, since the variance of the
+    difference is sd_c^2 / n_c + sd_t^2 / n_t and only collapses to one SD when they match.
+    """
     if delta == 0:
         return math.inf
+    sd_t = sd if sd_treatment is None else sd_treatment
     z = norm.ppf(1 - alpha / 2) + norm.ppf(power)
-    allocation = 1 / treatment_share + 1 / (1 - treatment_share)
-    return math.ceil(z**2 * sd**2 * allocation / delta**2)
+    variance = sd**2 / (1 - treatment_share) + sd_t**2 / treatment_share
+    return math.ceil(z**2 * variance / delta**2)
 
 
 def weeks_needed(total_n: float, weekly_customers: int) -> float:

@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-import numpy as np
 import pandas as pd
 
 from .data import DESIGN, campaign_view
@@ -78,8 +77,10 @@ def analyze(data: pd.DataFrame, assumptions: Assumptions | None = None) -> Reado
         revenue["n_treatment"], a.alpha,
     )
     n_total = revenue["n_control"] + revenue["n_treatment"]
-    pooled_sd = float(np.sqrt((revenue["control_sd"] ** 2 + revenue["treatment_sd"] ** 2) / 2))
-    required_n = required_total_n(delta, pooled_sd, revenue["n_treatment"] / n_total, a.alpha)
+    required_n = required_total_n(
+        delta, revenue["control_sd"], revenue["n_treatment"] / n_total, a.alpha,
+        sd_treatment=revenue["treatment_sd"],
+    )
     shortfall = max(0.0, required_n - n_total)
     additional_weeks = math.ceil(shortfall / a.weekly_customers) if a.weekly_customers else 0
 
@@ -88,10 +89,13 @@ def analyze(data: pd.DataFrame, assumptions: Assumptions | None = None) -> Reado
         len(segments) and (segments.significant & (segments.difference < 0)).any()
     )
 
+    # The pooled e-mail is the prespecified primary; picking one creative after the fact is one of
+    # two looks, so its verdict p-value is Bonferroni-adjusted for them.
+    verdict_p = revenue["p_value"] if a.variant == "any" else min(1.0, revenue["p_value"] * 2)
     verdict = decide(
         validity_failed=validity["failed"],
         primary_lift=revenue_lift,
-        primary_p=revenue["p_value"],
+        primary_p=verdict_p,
         contribution_low=contribution["ci_low"],
         contribution_high=contribution["ci_high"],
         segment_harm=segment_harm,

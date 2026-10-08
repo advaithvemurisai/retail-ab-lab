@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from scipy import stats
 from statsmodels.stats.power import NormalIndPower
 
 from retaillab.analysis import Assumptions, analyze
@@ -241,3 +242,47 @@ def test_hillstrom_readout_is_trusted():
     readout = analyze(load_hillstrom(RAW / "hillstrom.csv"), Assumptions(gross_margin=0.5))
     assert not readout.validity["failed"]
     assert readout.verdict.label != "DON'T TRUST"
+
+
+def test_welch_interval_uses_t_critical_value():
+    rng = np.random.default_rng(3)
+    frame = pd.DataFrame({
+        "arm": ["control"] * 12 + ["treatment"] * 8,
+        "revenue": np.r_[rng.normal(10, 4, 12), rng.normal(14, 9, 8)],
+    })
+    effect = welch_effect(frame)
+    reference = stats.ttest_ind(
+        frame.revenue[frame.arm == "treatment"], frame.revenue[frame.arm == "control"],
+        equal_var=False,
+    ).confidence_interval()
+    assert np.isclose(effect["ci_low"], reference.low) and np.isclose(effect["ci_high"], reference.high)
+
+
+def test_required_n_respects_unequal_arm_variances():
+    equal = required_total_n(0.1, 1, 2 / 3)
+    assert required_total_n(0.1, 1, 2 / 3, sd_treatment=1) == equal
+    # A noisier treatment arm with only 1/3 of the traffic needs more customers than the averaged SD implies.
+    share = 1 / 3
+    averaged = required_total_n(0.1, np.sqrt((1 + 4) / 2), share)
+    n = required_total_n(0.1, 1, share, sd_treatment=2)
+    assert n > averaged
+    achieved = power_two_means(0.1, 1, 2, round(n * (1 - share)), round(n * share))
+    assert abs(achieved - 0.8) < 0.01
+
+
+def test_single_creative_verdict_is_adjusted_for_picking_it():
+    for scale in np.linspace(0.2, 1.0, 161):
+        tweaked = DEMO.copy()
+        tweaked.loc[tweaked.arm == "mens", "revenue"] *= scale
+        raw = analyze(tweaked, Assumptions(variant="mens", use_cuped=False))
+        p = raw.revenue["p_value"]
+        if 0.03 < p < 0.045 and raw.revenue_lift > 0:
+            break
+    else:
+        pytest.skip("no scale produced a borderline p-value")
+    pooled_rule = decide(
+        validity_failed=False, primary_lift=raw.revenue_lift, primary_p=p,
+        contribution_low=1, contribution_high=2, roi=1.0,
+    )
+    assert pooled_rule.label == "SHIP"
+    assert raw.verdict.label != "SHIP"

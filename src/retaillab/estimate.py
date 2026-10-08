@@ -47,9 +47,11 @@ def welch_effect(
     """Difference in means with a Welch interval. Adequate for skewed spend at retail sample sizes."""
     control, treatment = _arms(data, metric)
     difference = treatment.mean() - control.mean()
-    se = np.sqrt(control.var(ddof=1) / len(control) + treatment.var(ddof=1) / len(treatment))
+    v_c, v_t = control.var(ddof=1) / len(control), treatment.var(ddof=1) / len(treatment)
+    se = np.sqrt(v_c + v_t)
     test = stats.ttest_ind(treatment, control, equal_var=False)
-    critical = stats.norm.ppf(1 - (1 - confidence) / 2)
+    dof = (v_c + v_t) ** 2 / (v_c**2 / (len(control) - 1) + v_t**2 / (len(treatment) - 1))
+    critical = stats.t.ppf(1 - (1 - confidence) / 2, dof)
     return {
         "control_mean": float(control.mean()),
         "treatment_mean": float(treatment.mean()),

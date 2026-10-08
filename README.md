@@ -49,6 +49,7 @@ Margin, cost per e-mail and the return hurdle are all adjustable in the sidebar,
   2. **Profitability:** does the campaign lose money or hurt a customer group? If so, DON'T SHIP.
   3. **Evidence:** is the gain real and large enough? If it clears the return hurdle, SHIP; if the result is still unclear, KEEP TESTING.
 
+  When one e-mail is picked on its own, its significance is adjusted for having chosen it, so a lucky winner can't clear the bar alone; the pooled e-mail is the primary comparison. Sample-size estimates account for each group's own spread and the traffic split, and confidence intervals use the t distribution.
   The order means a striking profit number from a broken experiment can never lead to SHIP. The rules live in one function in [`src/retaillab/decision.py`](src/retaillab/decision.py), and automated tests check that each scenario produces the right verdict.
 - **Proven methods:** the statistics follow published work from teams that run large-scale online experiments, such as Microsoft and LinkedIn. Examples include catching broken experiments, reducing noise so tests finish sooner, and avoiding false winners when results are checked repeatedly or many groups are compared at once. See [REFERENCES.md](REFERENCES.md).
 
