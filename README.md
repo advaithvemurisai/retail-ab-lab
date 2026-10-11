@@ -2,7 +2,7 @@
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://retail-ab-lab-bnwnskexpoqbajnhzqgnkh.streamlit.app/)
 
-**[Live app →](https://retail-ab-lab-bnwnskexpoqbajnhzqgnkh.streamlit.app/)**
+**[Live app →](https://retail-ab-lab.vercel.app/)** · [Streamlit version](https://retail-ab-lab-bnwnskexpoqbajnhzqgnkh.streamlit.app/)
 
 ## The business problem
 
