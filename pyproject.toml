@@ -10,7 +10,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff"]
+api = ["fastapi>=0.115"]
+dev = ["pytest", "ruff", "fastapi>=0.115", "httpx", "uvicorn"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]

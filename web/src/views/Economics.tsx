@@ -1,24 +1,13 @@
 import { Header, RangePlot, Table } from '../components/ui'
-import { money, pct } from '../lib/format'
-import { breakEvenLift } from '../lib/readout'
+import { finite, money, pct } from '../lib/format'
 import { useApp } from '../state'
 
 export default function Economics() {
-  const { data, readout } = useApp()
-  const r = readout()
-  const a = r.assumptions
+  const { data, readout, assumptions: a } = useApp()
+  const r = readout.readouts[a.variant]
   const [low, high] = r.revenue_lift_ci
   const { margins } = data
-  const rows = margins.sectors.map(({ sector, gross_margin }) => {
-    const needed = breakEvenLift(a.contact_cost, r.baseline_revenue, gross_margin)
-    return {
-      sector,
-      gross_margin,
-      needed,
-      contribution: (r.revenue.difference * gross_margin - a.contact_cost) * 10_000,
-      verdict: low > needed ? 'Pays' : high < needed ? "Doesn't pay" : 'Uncertain',
-    }
-  })
+  const rows = readout.sectors.map((row) => ({ ...row, needed: finite(row.break_even_lift), contribution: row.contribution_per_10k }))
   return (
     <>
       <Header

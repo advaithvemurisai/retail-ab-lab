@@ -98,13 +98,18 @@ function Shell() {
 }
 
 function SourceBanner() {
-  const { data } = useApp()
-  if (data.source === 'hillstrom') return null
-  return <div className="banner">Synthetic demo data. These numbers are illustrative, not the published Hillstrom result.</div>
+  const { data, updating, apiError } = useApp()
+  return (
+    <>
+      {data.source !== 'hillstrom' && <div className="banner">Synthetic demo data. These numbers are illustrative, not the published Hillstrom result.</div>}
+      {apiError && <div className="banner" role="alert">Could not update the readout: {apiError}. Showing the last result.</div>}
+      <div className={`updating${updating ? ' on' : ''}`} role="status" aria-live="polite">{updating ? 'Updating…' : ''}</div>
+    </>
+  )
 }
 
 function Assumptions() {
-  const { data, settings, update, reset, grossMargin } = useApp()
+  const { data, settings, update, reset, assumptions } = useApp()
   const { margins } = data
   return (
     <section className="assumptions" aria-label="Assumptions">
@@ -135,7 +140,7 @@ function Assumptions() {
             onChange={(event) => update({ customMargin: Number(event.target.value) })} />
         </label>
       ) : (
-        <p className="hint">Gross margin in use: <b>{pct(grossMargin, 1)}</b></p>
+        <p className="hint">Gross margin in use: <b>{pct(assumptions.gross_margin, 1)}</b></p>
       )}
       <label className="field">
         <span>Cost per e-mail ($)</span>

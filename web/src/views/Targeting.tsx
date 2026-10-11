@@ -1,21 +1,16 @@
 import { useState } from 'react'
-import { Header, Kpi, NumberInput, RangePlot, Table } from '../components/ui'
-import type { SegmentColumn } from '../data/types'
+import { Header, Kpi, Loading, NumberInput, RangePlot, Table } from '../components/ui'
+import type { Data, SegmentColumn, TargetingResponse } from '../data/types'
+import { useApi } from '../lib/api'
 import { cents, money, num } from '../lib/format'
-import { targetingPlan } from '../lib/readout'
 import { useApp } from '../state'
 
 export default function Targeting() {
-  const { data, assumptions } = useApp()
-  const a = assumptions()
+  const { data, params } = useApp()
   const [by, setBy] = useState<SegmentColumn>('history_segment')
   const [cap, setCap] = useState(data.customers)
   const [requireSignificant, setRequireSignificant] = useState(false)
-  const plan = targetingPlan(data, a, by, cap, requireSignificant)
-  const sum = (values: number[]) => values.reduce((total, value) => total + value, 0)
-  const planned = sum(plan.map((row) => row.send_count * row.profit_per_send))
-  const everyone = sum(plan.map((row) => row.audience * row.profit_per_send))
-  const ordered = [...plan].sort((x, y) => y.profit_per_send - x.profit_per_send)
+  const api = useApi<TargetingResponse>('/api/targeting', { ...params, by, cap, significant: requireSignificant })
   return (
     <>
       <Header
@@ -41,11 +36,25 @@ export default function Targeting() {
           Only BH-significant segments
         </label>
       </div>
+      {api.error && <div className="callout danger" role="alert">{api.error}</div>}
+      {api.data ? <Plan data={data} by={by} plan={api.data} /> : !api.error && <Loading />}
+      <p className="caption">
+        Segment estimates are noisier than the overall result. Point estimates drive the plan; turn on the BH filter to act only on segment differences
+        that survive correction.
+      </p>
+    </>
+  )
+}
+
+function Plan({ data, by, plan }: { data: Data; by: SegmentColumn; plan: TargetingResponse }) {
+  const ordered = [...plan.rows].sort((x, y) => y.profit_per_send - x.profit_per_send)
+  return (
+    <>
       <div className="grid kpis">
-        <Kpi label="Customers to e-mail" value={num(sum(plan.map((row) => row.send_count)))} />
-        <Kpi label="Expected contribution" value={money(planned)} />
-        <Kpi label="vs e-mailing everyone" value={money(planned - everyone, true)}
-          note={`E-mailing all ${num(sum(plan.map((row) => row.audience)))} customers: ${money(everyone)}`} />
+        <Kpi label="Customers to e-mail" value={num(plan.customers)} />
+        <Kpi label="Expected contribution" value={money(plan.planned)} />
+        <Kpi label="vs e-mailing everyone" value={money(plan.planned - plan.everyone, true)}
+          note={`E-mailing all ${num(plan.audience)} customers: ${money(plan.everyone)}`} />
       </div>
       <RangePlot
         title="Incremental contribution per e-mail by segment, with 95% intervals"
@@ -59,7 +68,7 @@ export default function Targeting() {
       />
       <p className="caption">Incremental contribution per e-mail (95% CI). Teal segments are in the send plan.</p>
       <Table
-        rows={plan}
+        rows={plan.rows}
         columns={[
           { label: data.segment_columns[by], value: (row) => row.segment, text: true },
           { label: 'Customers', value: (row) => num(row.audience) },
@@ -71,10 +80,6 @@ export default function Targeting() {
           { label: 'Send', value: (row) => num(row.send_count) },
         ]}
       />
-      <p className="caption">
-        Segment estimates are noisier than the overall result. Point estimates drive the plan; turn on the BH filter to act only on segment differences
-        that survive correction.
-      </p>
     </>
   )
 }

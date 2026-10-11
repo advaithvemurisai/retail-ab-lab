@@ -44,7 +44,7 @@ Margin, cost per e-mail and the return hurdle are all adjustable in the sidebar,
 
 - **Python and DuckDB:** one data model feeds every page, so marketing, sales and finance numbers always agree.
 - **Streamlit:** the interactive app.
-- **Static web app (Vercel):** the same pages in React, independent of the Streamlit app. [`scripts/build_web_data.py`](scripts/build_web_data.py) runs the Python analysis for every e-mail and CUPED setting, and the browser applies the margin, cost and hurdle to it, so the verdict still updates live with no server. A parity test checks the TypeScript verdict against Python's for a set of assumptions.
+- **Web app (Vercel):** the same pages in React with a FastAPI backend, independent of the Streamlit app. At build time [`scripts/build_web_data.py`](scripts/build_web_data.py) computes the statistics that need customer-level data for every e-mail and CUPED setting. The API ([`src/retaillab/api.py`](src/retaillab/api.py)) then prices them at the viewer's margin, cost and hurdle with [`src/retaillab/pricing.py`](src/retaillab/pricing.py), the same code `analyze()` and the Streamlit app use. So the decision rules exist once, in Python. That layer needs no pandas or scipy, which keeps the serverless function small.
 - **Decision rules:** the verdict comes from the same checks in a fixed order, and the first one that applies decides:
   1. **Trust:** did the experiment run correctly? If the customer groups aren't the sizes the design called for, something broke, and the verdict is DON'T TRUST.
   2. **Profitability:** does the campaign lose money or hurt a customer group? If so, DON'T SHIP.
@@ -65,16 +65,18 @@ streamlit run app/streamlit_app.py
 
 Without the data, the app runs on clearly labelled synthetic data instead. Run `pytest` for the tests.
 
-The static web app:
+The web app and its API:
 
 ```bash
+pip install fastapi uvicorn
 cd web
 npm install
 npm run data       # python ../scripts/build_web_data.py, writes public/data/readout.json
-npm run dev        # or: npm test, npm run build
+npm run api        # FastAPI on :8000 (API docs at /api/docs)
+npm run dev        # in a second terminal; forwards /api to :8000
 ```
 
-To deploy it, import the repo in Vercel with root directory `web/`. [`web/vercel.json`](web/vercel.json) downloads the public data and builds the JSON in a throwaway virtualenv, then builds the app. The build fails rather than shipping demo numbers if the download fails.
+To deploy it, import the repo in Vercel with root directory `web/`. [`web/vercel.json`](web/vercel.json) downloads the public data and builds the JSON in a throwaway virtualenv, copies the API's pure-Python modules next to the function, then builds the app. The build fails rather than shipping demo numbers if the download fails.
 
 ## Data and limitations
 

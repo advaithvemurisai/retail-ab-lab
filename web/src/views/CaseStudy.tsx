@@ -1,16 +1,14 @@
 import { Header } from '../components/ui'
-import { cents, formatRoi, money, num, pct } from '../lib/format'
+import { cents, finite, formatRoi, money, num, pct } from '../lib/format'
 import { useApp } from '../state'
 
 export default function CaseStudy() {
-  const { data, readout } = useApp()
-  const pooled = readout('any')
-  const mens = readout('mens')
-  const womens = readout('womens')
-  const a = pooled.assumptions
+  const { data, readout, assumptions: a } = useApp()
+  const { any: pooled, mens, womens } = readout.readouts
   const attribution = data.variants.any.attribution
-  const [leader, trailer] = mens.economics.roi >= womens.economics.roi ? [mens, womens] : [womens, mens]
-  const names = { any: 'pooled', mens: "men's", womens: "women's" }
+  const mensLeads = finite(mens.economics.roi) >= finite(womens.economics.roi)
+  const [leader, trailer] = mensLeads ? [mens, womens] : [womens, mens]
+  const [leaderName, trailerName] = mensLeads ? ["men's", "women's"] : ["women's", "men's"]
   const { margins } = data
   return (
     <div className="prose">
@@ -38,19 +36,19 @@ export default function CaseStudy() {
       <ul>
         <li>
           <b>Pooled campaign: {pooled.verdict.label}.</b> Revenue per customer rose {pct(pooled.revenue_lift, 0, true)} against a{' '}
-          {pct(pooled.break_even_lift)} break-even bar; contribution {money(pooled.economics.contribution)} (95% CI {money(pooled.contribution.ci_low)} to{' '}
+          {pct(finite(pooled.break_even_lift))} break-even bar; contribution {money(pooled.economics.contribution)} (95% CI {money(pooled.contribution.ci_low)} to{' '}
           {money(pooled.contribution.ci_high)}).
         </li>
         <li>
-          <b>The {names[leader.assumptions.variant]} e-mail carries it.</b> {pct(leader.revenue_lift, 0, true)} lift and {formatRoi(leader.economics.roi)} ROI,
-          against {pct(trailer.revenue_lift, 0, true)} and {formatRoi(trailer.economics.roi)} for the {names[trailer.assumptions.variant]} e-mail, whose
+          <b>The {leaderName} e-mail carries it.</b> {pct(leader.revenue_lift, 0, true)} lift and {formatRoi(leader.economics.roi)} ROI,
+          against {pct(trailer.revenue_lift, 0, true)} and {formatRoi(trailer.economics.roi)} for the {trailerName} e-mail, whose
           chance of loss is {pct(trailer.contribution.chance_of_loss)}.
         </li>
         <li>
           <b>Attribution overstates.</b> {pct(attribution.gap_pct ?? 0)} of revenue from e-mailed customers would have happened without the e-mail.
         </li>
         <li>
-          <b>CUPED is not free sensitivity.</b> Past-year spend explains {pct(pooled.block.cuped.variance_reduction, 2)} of two-week spend variance here,
+          <b>CUPED is not free sensitivity.</b> Past-year spend explains {pct(data.variants.any.cuped.variance_reduction, 2)} of two-week spend variance here,
           so it saves almost nothing.
         </li>
       </ul>

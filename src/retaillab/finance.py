@@ -8,6 +8,9 @@ import numpy as np
 import pandas as pd
 
 from .data import RAW_DIR, ROOT
+from .pricing import allocate, break_even_lift, contribution_distribution
+
+__all__ = ["break_even_lift", "contribution_distribution"]  # re-exported from pricing
 
 SECTORS = ["Apparel", "Retail (Grocery and Food)", "Restaurant/Dining"]
 DEMO_MARGINS = ROOT / "data" / "fixtures" / "sector_margins_demo.csv"
@@ -67,13 +70,6 @@ def load_margins(raw_dir: str | Path = RAW_DIR, force_demo: bool = False) -> dic
     }
 
 
-def break_even_lift(cost_per_contact: float, baseline_revenue: float, gross_margin: float) -> float:
-    """Relative revenue lift at which gross profit from the lift equals contact cost."""
-    if baseline_revenue <= 0 or gross_margin <= 0:
-        return np.inf
-    return cost_per_contact / (baseline_revenue * gross_margin)
-
-
 def pnl(
     data: pd.DataFrame, gross_margin: float, contact_cost: float = 0.0, metric: str = "revenue"
 ) -> dict[str, float]:
@@ -90,20 +86,6 @@ def pnl(
         "marketing_cost": float(marketing_cost),
         "contribution": float(contribution),
         "roi": float(contribution / marketing_cost) if marketing_cost else np.inf,
-    }
-
-
-def contribution_distribution(
-    difference_draws: np.ndarray, customers_contacted: int, gross_margin: float,
-    contact_cost: float,
-) -> dict[str, float]:
-    """Scale per-customer lift draws to campaign contribution and summarise the downside."""
-    contribution = (difference_draws * gross_margin - contact_cost) * customers_contacted
-    low, high = np.quantile(contribution, [0.025, 0.975])
-    return {
-        "ci_low": float(low),
-        "ci_high": float(high),
-        "chance_of_loss": float(np.mean(contribution < 0)),
     }
 
 
@@ -124,16 +106,5 @@ def greedy_allocation(
     rows: pd.DataFrame, cap: int, require_significant: bool = False
 ) -> pd.DataFrame:
     """Fill a send cap with the highest-return segments that are expected to make money."""
-    result = rows.sort_values("profit_per_dollar", ascending=False).copy()
-    result["selected"] = False
-    result["send_count"] = 0
-    remaining = cap
-    for index, row in result.iterrows():
-        eligible = row.profit_per_dollar > 0 and (
-            not require_significant or bool(row.get("significant", False))
-        )
-        amount = min(remaining, int(row.audience)) if eligible else 0
-        result.loc[index, "selected"] = amount > 0
-        result.loc[index, "send_count"] = amount
-        remaining -= amount
-    return result
+    plan = allocate(rows.to_dict("records"), cap, require_significant)
+    return pd.DataFrame(plan, index=rows.sort_values("profit_per_dollar", ascending=False, kind="stable").index)

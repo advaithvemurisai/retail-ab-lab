@@ -5,9 +5,8 @@ import { cents, formatRoi, money } from '../lib/format'
 import { VARIANT_OPTIONS, useApp } from '../state'
 
 export default function CampaignRoi() {
-  const { readout } = useApp()
-  const r = readout()
-  const a = r.assumptions
+  const { readout, assumptions: a } = useApp()
+  const r = readout.readouts[a.variant]
   const e = r.economics
   const costOfGoods = e.incremental_revenue - e.gross_profit
   // Waterfall as range bars: each step spans [start, end] of the running total.

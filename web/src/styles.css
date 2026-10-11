@@ -135,3 +135,6 @@ details > summary { cursor: pointer; font-weight: 600; margin: 12px 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .reset { font: inherit; font-size: .84rem; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer; margin-top: 4px; }
 .reset:hover { border-color: var(--accent); color: var(--ink); }
+.updating { position: fixed; top: 12px; right: 16px; z-index: 10; font-size: .8rem; font-weight: 600; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; opacity: 0; transition: opacity .15s .2s; pointer-events: none; }
+.updating.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .updating { transition: none; } }

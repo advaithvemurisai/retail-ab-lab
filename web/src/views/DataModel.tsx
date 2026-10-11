@@ -9,17 +9,10 @@ dim_campaign ───┘                                      ├── mart_ex
 dim_sector_finance (sector, gross_margin, as_of) ────────────────────────────┘`
 
 export default function DataModel() {
-  const { data, assumptions } = useApp()
-  const a = assumptions()
+  const { data, readout } = useApp()
   const { warehouse } = data
-  // mart_pnl at the sidebar's contact cost: the arm-grain lift comes from the DuckDB build.
-  const pnl = warehouse.arms.flatMap((arm) =>
-    data.margins.sectors.map(({ sector, gross_margin }) => {
-      const grossProfit = arm.incremental_revenue * gross_margin
-      const marketingCost = arm.customers * a.contact_cost
-      return { arm: arm.arm, sector, customers: arm.customers, incremental: arm.incremental_revenue, grossProfit, marketingCost, contribution: grossProfit - marketingCost }
-    }),
-  )
+  // mart_pnl re-priced by the API at the sidebar's cost; the arm-grain lift comes from the DuckDB build.
+  const pnl = readout.mart_pnl
   return (
     <>
       <Header
@@ -43,9 +36,9 @@ export default function DataModel() {
           { label: 'arm', value: (row) => row.arm, text: true },
           { label: 'sector', value: (row) => row.sector, text: true },
           { label: 'customers', value: (row) => num(row.customers) },
-          { label: 'incremental_revenue', value: (row) => money(row.incremental) },
-          { label: 'gross_profit', value: (row) => money(row.grossProfit) },
-          { label: 'marketing_cost', value: (row) => money(row.marketingCost) },
+          { label: 'incremental_revenue', value: (row) => money(row.incremental_revenue) },
+          { label: 'gross_profit', value: (row) => money(row.gross_profit) },
+          { label: 'marketing_cost', value: (row) => money(row.marketing_cost) },
           { label: 'contribution', value: (row) => money(row.contribution) },
         ]}
       />

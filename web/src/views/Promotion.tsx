@@ -2,22 +2,18 @@ import { Bar, BarChart, CartesianGrid, Cell, ErrorBar, LabelList, Tooltip, XAxis
 import { ChartBox, Header, Table } from '../components/ui'
 import { ARM_COLORS, axisProps, gridProps, tooltipStyle } from '../lib/chart'
 import { cents, money, num, pct, pValue } from '../lib/format'
-import { metricKey } from '../lib/readout'
 import { useApp } from '../state'
 
 export default function Promotion() {
-  const { data, assumptions } = useApp()
-  const a = assumptions()
-  const { summary, pairs } = data.promotion[metricKey(a)]
-  const control = summary.find((row) => row.arm === 'control')!.revenue
+  const { data, readout, assumptions: a } = useApp()
+  const { summary, pairs } = data.promotion[a.use_cuped ? 'cuped' : 'raw']
+  const priced = readout.promotion
   const rows = summary.map((row) => ({
     ...row,
     label: data.arm_labels[row.arm],
     err: 1.96 * (row.sd / Math.sqrt(row.customers)),
-    contribution: row.arm === 'control' ? 0 : ((row.revenue - control) * a.gross_margin - a.contact_cost) * 10_000,
+    contribution: priced.arms.find((arm) => arm.arm === row.arm)!.contribution_per_10k,
   }))
-  const [best, runnerUp] = rows.filter((row) => row.arm !== 'control').sort((x, y) => y.contribution - x.contribution)
-  const headToHead = pairs.find((pair) => new Set([pair.left, pair.right, best.arm, runnerUp.arm]).size === 2)!
   const label = (arm: keyof typeof data.arm_labels) => data.arm_labels[arm].toLowerCase()
   return (
     <>
@@ -26,16 +22,16 @@ export default function Promotion() {
         title="Which e-mail should roll out?"
         lede="Men's and women's creatives were tested side by side against no e-mail. Compare all three with a correction for making three comparisons at once."
       />
-      {best.contribution <= 0 ? (
+      {priced.decision === 'send_neither' ? (
         <div className="callout danger">Neither e-mail earns back its cost at these assumptions. Send neither.</div>
-      ) : headToHead.significant ? (
+      ) : priced.decision === 'roll_out' ? (
         <div className="callout success">
-          <b>Roll out the {label(best.arm)}.</b> It beats the {label(runnerUp.arm)} after BH correction and earns {money(best.contribution)} of
+          <b>Roll out the {label(priced.best)}.</b> It beats the {label(priced.runner_up)} after BH correction and earns {money(priced.best_contribution_per_10k)} of
           contribution per 10,000 sends.
         </div>
       ) : (
         <div className="callout warning">
-          <b>The {label(best.arm)} leads, but not decisively.</b> The gap to the {label(runnerUp.arm)} does not survive BH correction. Ship the leader
+          <b>The {label(priced.best)} leads, but not decisively.</b> The gap to the {label(priced.runner_up)} does not survive BH correction. Ship the leader
           if a choice is needed now, or extend the head-to-head test.
         </div>
       )}

@@ -1,4 +1,4 @@
-// Mirrors Python's format specs ("{:+.0%}", "{:,.0f}") so verdict text matches the Streamlit app.
+// Mirrors Python's format specs ("{:+.0%}", "{:,.0f}") so page text matches the API's verdict text.
 
 /** Python "{:.Nf%}" and, with signed, "{:+.Nf%}". */
 export const pct = (value: number, digits = 0, signed = false): string => {
@@ -17,7 +17,10 @@ export const cents = (value: number): string => `${value < 0 ? '-' : ''}$${Math.
 export const num = (value: number, digits = 0): string =>
   value.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
 
-/** ROI is undefined when the campaign costs nothing to send. */
-export const formatRoi = (roi: number): string => (Number.isFinite(roi) ? pct(roi, 0, true) : 'n/a (no e-mail cost)')
+/** ROI is undefined (null from the API) when the campaign costs nothing to send. */
+export const formatRoi = (roi: number | null): string => (roi === null ? 'n/a (no e-mail cost)' : pct(roi, 0, true))
+
+/** Python's inf arrives from the API as null. */
+export const finite = (value: number | null): number => value ?? Infinity
 
 export const pValue = (p: number, digits = 4): string => (p < 10 ** -digits ? `<${(10 ** -digits).toFixed(digits)}` : p.toFixed(digits))

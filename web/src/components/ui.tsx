@@ -1,6 +1,6 @@
 import { Component, useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react'
 import { ResponsiveContainer } from 'recharts'
-import type { Verdict } from '../lib/readout'
+import type { Verdict } from '../data/types'
 
 export function Header({ eyebrow, title, lede }: { eyebrow: string; title: string; lede?: ReactNode }) {
   return (

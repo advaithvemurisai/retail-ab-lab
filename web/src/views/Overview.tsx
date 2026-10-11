@@ -1,20 +1,19 @@
 import { Kpi, RangePlot, Table, VerdictCard } from '../components/ui'
 import type { Arm } from '../data/types'
-import { cents, formatRoi, money, num, pct } from '../lib/format'
+import { cents, finite, formatRoi, money, num, pct } from '../lib/format'
 import { VARIANT_OPTIONS, useApp } from '../state'
 
 export default function Overview() {
-  const { data, readout } = useApp()
-  const r = readout()
-  const a = r.assumptions
+  const { data, readout, assumptions: a } = useApp()
+  const r = readout.readouts[a.variant]
+  const block = data.variants[a.variant]
   const [low, high] = r.revenue_lift_ci
+  const breakEven = finite(r.break_even_lift)
   const variantLabel = VARIANT_OPTIONS.find((option) => option.value === a.variant)!.label
-  const pooled = readout('any')
-  const mens = readout('mens')
-  const womens = readout('womens')
+  const { any: pooled, mens, womens } = readout.readouts
   let leader = { name: "men's", r: mens }
   let trailer = { name: "women's", r: womens }
-  if (womens.economics.roi > mens.economics.roi) [leader, trailer] = [trailer, leader]
+  if (finite(womens.economics.roi) > finite(mens.economics.roi)) [leader, trailer] = [trailer, leader]
   const attribution = data.variants.any.attribution
   const questions = [
     ['Did the campaign pay for itself?',
@@ -53,13 +52,13 @@ export default function Overview() {
       <RangePlot
         title="Observed revenue lift with 95% interval against the break-even lift"
         rows={[{ label: 'Observed revenue lift', value: r.revenue_lift, low, high, bar: true }]}
-        refs={Number.isFinite(r.break_even_lift) ? [{ x: r.break_even_lift, label: `Break-even ${pct(r.break_even_lift)}`, dashed: true }] : []}
+        refs={Number.isFinite(breakEven) ? [{ x: breakEven, label: `Break-even ${pct(breakEven)}`, dashed: true }] : []}
         format={(value) => pct(value)}
       />
       <p className="caption">
         Customers who got no e-mail spent {cents(r.baseline_revenue)} each on average. At {pct(a.gross_margin)} gross margin and {cents(a.contact_cost)} per
-        e-mail, revenue must rise {pct(r.break_even_lift)} to pay for the send. Conversion moved {pct(r.block.conversion.relative_lift, 0, true)} (95%
-        CI {pct(r.block.conversion.lift_ci_low, 0, true)} to {pct(r.block.conversion.lift_ci_high, 0, true)}).
+        e-mail, revenue must rise {pct(breakEven)} to pay for the send. Conversion moved {pct(block.conversion.relative_lift, 0, true)} (95%
+        CI {pct(block.conversion.lift_ci_low, 0, true)} to {pct(block.conversion.lift_ci_high, 0, true)}).
       </p>
 
       <h2>The questions a retailer needs answered</h2>
@@ -98,7 +97,7 @@ export default function Overview() {
         />
         <p><b>Covariate balance.</b> Standardized mean differences below 0.1 are balanced.</p>
         <Table
-          rows={r.block.balance}
+          rows={block.balance}
           columns={[
             { label: 'Covariate', value: (row) => row.covariate, text: true },
             { label: 'SMD', value: (row) => row.smd.toFixed(4) },
@@ -110,7 +109,7 @@ export default function Overview() {
           resamples of the revenue difference, scaled by customers e-mailed, margin, and cost. Conversion uses a two-proportion z-test with a
           delta-method interval. Power is computed for the break-even lift at the current sample size ({pct(r.power)}).{' '}
           {a.use_cuped
-            ? `CUPED is on: past-year spend explains ${pct(r.block.cuped.variance_reduction, 2)} of revenue variance here, so it barely changes the estimate.`
+            ? `CUPED is on: past-year spend explains ${pct(block.cuped.variance_reduction, 2)} of revenue variance here, so it barely changes the estimate.`
             : 'CUPED is off.'}
         </p>
       </details>

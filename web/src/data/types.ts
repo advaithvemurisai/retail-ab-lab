@@ -105,3 +105,80 @@ export interface Data {
     sql: string
   }
 }
+
+// Responses from the API (src/retaillab/api.py). Python's inf arrives as null.
+
+export interface Verdict {
+  label: string
+  tone: 'success' | 'warning' | 'danger' | 'invalid'
+  reasons: string[]
+  next_step: string
+  additional_weeks: number
+}
+
+export interface Priced {
+  baseline_revenue: number
+  revenue_lift: number
+  revenue_lift_ci: [number, number]
+  economics: {
+    customers_contacted: number
+    incremental_revenue: number
+    gross_profit: number
+    marketing_cost: number
+    contribution: number
+    roi: number | null
+  }
+  contribution: { ci_low: number; ci_high: number; chance_of_loss: number }
+  break_even_lift: number | null
+  planned_lift: number
+  power: number
+  required_n: number | null
+  additional_weeks: number
+  verdict: Verdict
+}
+
+export interface ReadoutResponse {
+  readouts: Record<Variant, Priced>
+  sectors: { sector: string; gross_margin: number; break_even_lift: number | null; contribution_per_10k: number; verdict: string }[]
+  promotion: {
+    arms: { arm: Arm; contribution_per_10k: number }[]
+    best: Arm
+    runner_up: Arm
+    best_contribution_per_10k: number
+    decision: 'roll_out' | 'lean' | 'send_neither'
+  }
+  mart_pnl: {
+    arm: Arm
+    sector: string
+    customers: number
+    incremental_revenue: number
+    gross_profit: number
+    marketing_cost: number
+    contribution: number
+  }[]
+}
+
+export interface TargetingResponse {
+  rows: (SegmentRow & {
+    audience: number
+    profit_per_send: number
+    profit_low: number
+    profit_high: number
+    profit_per_dollar: number
+    selected: boolean
+    send_count: number
+  })[]
+  customers: number
+  planned: number
+  everyone: number
+  audience: number
+}
+
+export interface PlanningResponse {
+  n_raw: number | null
+  n_cuped: number | null
+  n_used: number | null
+  weeks: number | null
+  weeks_saved: number | null
+  curve: { weeks: number; raw: number; cuped: number }[]
+}
