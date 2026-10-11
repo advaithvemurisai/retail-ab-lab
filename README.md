@@ -44,6 +44,7 @@ Margin, cost per e-mail and the return hurdle are all adjustable in the sidebar,
 
 - **Python and DuckDB:** one data model feeds every page, so marketing, sales and finance numbers always agree.
 - **Streamlit:** the interactive app.
+- **Static web app (Vercel):** the same pages in React, independent of the Streamlit app. [`scripts/build_web_data.py`](scripts/build_web_data.py) runs the Python analysis for every e-mail and CUPED setting, and the browser applies the margin, cost and hurdle to it, so the verdict still updates live with no server. A parity test checks the TypeScript verdict against Python's for a set of assumptions.
 - **Decision rules:** the verdict comes from the same checks in a fixed order, and the first one that applies decides:
   1. **Trust:** did the experiment run correctly? If the customer groups aren't the sizes the design called for, something broke, and the verdict is DON'T TRUST.
   2. **Profitability:** does the campaign lose money or hurt a customer group? If so, DON'T SHIP.
@@ -63,6 +64,17 @@ streamlit run app/streamlit_app.py
 ```
 
 Without the data, the app runs on clearly labelled synthetic data instead. Run `pytest` for the tests.
+
+The static web app:
+
+```bash
+cd web
+npm install
+npm run data       # python ../scripts/build_web_data.py, writes public/data/readout.json
+npm run dev        # or: npm test, npm run build
+```
+
+To deploy it, import the repo in Vercel with root directory `web/`. [`web/vercel.json`](web/vercel.json) downloads the public data and builds the JSON in a throwaway virtualenv, then builds the app. The build fails rather than shipping demo numbers if the download fails.
 
 ## Data and limitations
 

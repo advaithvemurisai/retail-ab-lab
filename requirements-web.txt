@@ -1,0 +1,7 @@
+# What scripts/build_web_data.py needs: the analysis stack without Streamlit or Plotly.
+numpy
+pandas
+scipy
+statsmodels
+duckdb
+xlrd
